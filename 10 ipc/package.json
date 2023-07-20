@@ -1,0 +1,18 @@
+{
+  "devDependencies": {
+    "electron": "^25.3.1"
+  },
+  "name": "ipc",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [
+    "ipc"
+  ],
+  "author": "story5",
+  "license": "ISC",
+  "description": ""
+}
