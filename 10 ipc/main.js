@@ -20,4 +20,6 @@ function handleIPC() {
         // do some work
         console.log('do-some-work',a,b)
     })
+
+    win.webContents.send('do-some-render-work')
 }
