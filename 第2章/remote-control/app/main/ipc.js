@@ -1,8 +1,15 @@
-const {ipcMain} = require('electron')
-module.exports = function() {
-    ipcMain.handle('login',async ()=>{
+const { ipcMain } = require('electron')
+const { send: sendMainWindow } = require('./wndows/main')
+const { create: createControlWindow } = require('./wndows/control')
+module.exports = function () {
+    ipcMain.handle('login', async () => {
         // 先mock,返回一个code
-        let code =Math.floor(Math.random() * (999999 - 100000)) + 100000
+        let code = Math.floor(Math.random() * (999999 - 100000)) + 100000
         return code
+    })
+    ipcMain.on('control', async (e, remoteCode) => {
+        // 这里跟服务端交互,但是mock返回
+        sendMainWindow('control-state-change', remoteCode, 1)
+        createControlWindow()
     })
 }
