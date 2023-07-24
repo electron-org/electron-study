@@ -1,6 +1,6 @@
 const { ipcMain } = require('electron')
-const { send: sendMainWindow } = require('./wndows/main')
-const { create: createControlWindow } = require('./wndows/control')
+const { send: sendMainWindow } = require('./windows/main')
+const { create: createControlWindow } = require('./windows/control')
 module.exports = function () {
     ipcMain.handle('login', async () => {
         // 先mock,返回一个code
