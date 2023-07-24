@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import logo from './logo.svg';
 import './App.css';
 import { ipcRenderer } from 'electron';
+import './peer-puppet.js'
 // const {ipcRenderer} = window.require('electron')
 function App() {
   const [remoteCode, setRemoteCode] = useState('')
