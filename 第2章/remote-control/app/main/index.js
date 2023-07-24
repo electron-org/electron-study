@@ -6,4 +6,5 @@ app.on('ready', () => {
     // createMainWindow()
     createControlWindow()
     handleIPC()
+    require('./robot.js')()
 })
