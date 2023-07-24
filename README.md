@@ -43,7 +43,7 @@ npm start
 
 # 2.番茄钟应用
 
-## 1.新版本electron白屏问题
+## 2.1 新版本electron白屏问题
 
 新版本的 electron，可能会有安全问题导致代码不能正常运行，可以参考 https://www.electronjs.org/docs/tutorial/security#3-enable-context-isolation-for-remote-content。 
 
@@ -60,7 +60,7 @@ win = new BrowserWindow({
 })
 ```
 
-## 2.打开调试工具
+## 2.2 打开调试工具
 
 打开 BrowserWindow 的 webContents.openDevTools()。
 
@@ -69,6 +69,95 @@ let win = new BrowserWindow()
 win.webContents.openDevTools();
 ```
 
-## 3.mac上不显示通知问题
+## 2.3 mac上不显示通知问题
 
 设置->通知->Electron->允许通知
+
+# 3.远程控制软件
+
+## 3.1 捕获音视频媒体流
+
+html代码
+
+```html
+<video id="video1></video>
+```
+
+js代码
+
+```javascript
+navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: {
+        width: { min: 1024, ideal: 1280, max: 1920 },
+        height: { min: 576, ideal: 720, max: 1080 },
+        frameRate: { max: 30 }
+    }
+}).then(stream => {
+    console.log(stream)
+    const video1 = document.getElementById('video1')
+    video1.srcObject = stream
+    video1.onloadedmetadata = function () {
+        video1.play()
+    }
+})
+```
+
+## 3.2 捕获桌面视频流
+
+[Electron 17开始desktopCapturer.getSources只能写在主进程里](https://www.electronjs.org/docs/latest/api/desktop-capturer)
+
+Main process
+
+```javascript
+// In the main process.
+const { BrowserWindow, desktopCapturer } = require('electron')
+
+const mainWindow = new BrowserWindow()
+
+desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+  for (const source of sources) {
+    mainWindow.webContents.send('SET_SOURCE', source.id)
+    return
+  }
+})
+```
+
+Preload process
+
+```javascript
+// In the preload script.
+const { ipcRenderer } = require('electron')
+
+ipcRenderer.on('SET_SOURCE', async (event, sourceId) => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        mandatory: {
+          chromeMediaSource: 'desktop',
+          chromeMediaSourceId: sourceId,
+          minWidth: 1280,
+          maxWidth: 1280,
+          minHeight: 720,
+          maxHeight: 720
+        }
+      }
+    })
+    handleStream(stream)
+  } catch (e) {
+    handleError(e)
+  }
+})
+
+function handleStream (stream) {
+  const video = document.querySelector('video')
+  video.srcObject = stream
+  video.onloadedmetadata = (e) => video.play()
+}
+
+function handleError (e) {
+  console.log(e)
+}
+```
+
