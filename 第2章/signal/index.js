@@ -2,12 +2,17 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8010 });
 const code2ws = new Map()
 wss.on('connection', function connection(ws, request) {
-    // ws => 端
-    let code = Math.floor(Math.random() * (999999 - 100000)) + 100000;
-    code2ws.set(code, ws)
     ws.sendData = (event, data) => {
         ws.send(JSON.stringify({ event, data }))
     }
+    ws.sendError = msg => {
+        ws.sendData('error', {msg})
+    };
+    
+    // ws => 端
+    let code = Math.floor(Math.random() * (999999 - 100000)) + 100000;
+    code2ws.set(code, ws)
+
 
     ws.on('message', function incoming(message) {
         console.log('incoming: ', message)
@@ -23,11 +28,27 @@ wss.on('connection', function connection(ws, request) {
         let { event, data } = parsedMessage
         if (event === 'login') {
             ws.sendData('logined', { code })
+        } else if (event === 'control') {
+            let remote = +data.remote
+            if (code2ws.has(remote)) {
+                ws.sendData('controlled', { remote })
+                let remoteWS = code2ws.get(remote)
+                ws.sendRemote = remoteWS.sendData
+                remoteWS.sendRemote = ws.sendData
+                ws.sendRemote('be-controlled', { remote: code })
+            }
+
+        } else if (event === 'forward') {
+            // data = {event,data}
+            ws.sendRemote(data.event, data.data)
         }
+
     })
     ws.on('close', function () {
-        // 响应客户端close事件
+        code2ws.delete(code)
+        clearTimeout(ws._closeTimeout)
     })
-    // 发送内容到客户端
-    ws.send('推送内容')
+    ws._closeTimeout = setTimeout(() => {
+        ws.terminate()
+    }, 10 * 60 * 1000);
 })
