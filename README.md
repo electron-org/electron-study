@@ -161,3 +161,28 @@ function handleError (e) {
 }
 ```
 
+## 3.2 服务端实现WebSocket服务器(基于Node.js)
+
+(1) 安装
+
+```bash
+npm install ws --save
+```
+
+(2) 基本使用
+
+```javascript
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8010 });
+wss.on('connection', function connection(ws, request) {
+    ws.on('message', function incoming(msg) {
+        // 响应客户端send事件
+    })
+    ws.on('close', function () {
+        // 响应客户端close事件
+    })
+    // 发送内容到客户端
+    ws.send('推送内容')
+})
+```
+
