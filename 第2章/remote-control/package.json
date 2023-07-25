@@ -16,7 +16,8 @@
     "electron-is-dev": "^2.0.0",
     "require": "^2.4.20",
     "robotjs": "^0.6.0",
-    "vkey": "^1.0.1"
+    "vkey": "^1.0.1",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.2.13",

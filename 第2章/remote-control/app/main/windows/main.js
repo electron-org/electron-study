@@ -17,14 +17,19 @@ function create() {
     } else {
         win.loadFile(path.resolve(__dirname, '../renderer/pages/main/index.html'))
     }
-    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-        for (const source of sources) {
-            mainWindow.webContents.send('add-stream', source.id)
-            return
-        }
-    })
+    getSources()
 }
 function send(channel, ...args) {
     win.webContents.send(channel, ...args)
 }
-module.exports = { create, send }
+
+async function getSources() {
+    const sources = await desktopCapturer.getSources({ types: ["screen"] });
+    try {
+        send('SET_SOURCE', sources[0].id, ...args);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+module.exports = { create, send, getSources }
