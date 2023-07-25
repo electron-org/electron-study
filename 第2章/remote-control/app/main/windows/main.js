@@ -1,8 +1,9 @@
-const { BrowserWindow, desktopCapturer } = require('electron')
+const { BrowserWindow } = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
 
 let win
+let willQuitApp = false
 function create() {
     win = new BrowserWindow({
         width: 600,
@@ -12,24 +13,31 @@ function create() {
             contextIsolation: false,
         }
     })
+    win.on('close', (e) => {
+        if (willQuitApp) {
+            win = null
+        } else {
+            e.preventDefault()
+            win.hide()
+        }
+    })
     if (isDev) {
         win.loadURL('http://localhost:3000')
     } else {
-        win.loadFile(path.resolve(__dirname, '../renderer/pages/main/index.html'))
+        // 第三章用到
+        win.loadFile(path.resolve(__dirname, '../../renderer/pages/main/index.html'))
     }
-    getSources()
 }
 function send(channel, ...args) {
     win.webContents.send(channel, ...args)
 }
-
-async function getSources() {
-    const sources = await desktopCapturer.getSources({ types: ["screen"] });
-    try {
-        send('SET_SOURCE', sources[0].id, ...args);
-    } catch (e) {
-        console.error(e);
-    }
+function show() {
+    win.show()
 }
 
-module.exports = { create, send, getSources }
+function close() {
+    willQuitApp = true
+    win.close()
+}
+
+module.exports = { create, send, show, close }

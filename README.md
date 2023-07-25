@@ -161,7 +161,7 @@ function handleError (e) {
 }
 ```
 
-## 3.2 服务端实现WebSocket服务器(基于Node.js)
+## 3.3 服务端实现WebSocket服务器(基于Node.js)
 
 (1) 安装
 
@@ -186,3 +186,81 @@ wss.on('connection', function connection(ws, request) {
 })
 ```
 
+## 3.4 禁止多开
+
+```javascript
+const gotTheLock = app.requestSingleInstanceLock()
+if(!gotTheLock) {
+	app.quit()
+} else {
+	app.on('second-instance',(event,commandLine,workingDirectory)=>{
+		//当运行第二个实例时,将会聚焦到myWindow这个窗口
+		showMainWindow()
+	})
+	app.on('ready',()=>{
+	...
+	})
+}
+```
+
+## 3.5 Menu/MenuItem(菜单/菜单项)
+
+(1) 新建菜单
+
+```javascript
+const menu = new Menu()
+```
+
+(2) 新建菜单项
+
+```javascript
+const menuItem1 = new MenuItem({ label: '复制', role: 'copy' })
+const menuItem2 = new MenuItem({ label: '菜单项名', click: handler, enabled, visible,
+type: normal | separator | submenu | checkbox | radio,
+role: copy | paste | cut | quit | ... })
+```
+
+(3) 添加菜单项
+
+```javascript
+menu.append(menuItem1)
+menu.append(new MenuItem({ type: 'separator' })) menu.append(menuItem2)
+```
+
+(4) 弹出右键菜单
+
+```javascript
+menu.popup({ window: remote.getCurrentWindow() })
+```
+
+(5) 设置应用菜单栏
+
+```javascript
+app.applicationMenu = appMenu;
+```
+
+## 3.6 托盘
+
+(1) 创建托盘
+
+```javascript
+tray = new Tray('/path/to/my/icon')
+```
+
+* Mac图片建议保留 1倍图(32 * 32)，2倍图@2x(64 * 64)
+* Windows使用ico格式
+* 大部分Mac托盘都是偏黑色的、Windows则是彩色的
+
+(2) 弹出托盘菜单
+
+```javascript
+const contextMenu = Menu.buildFromTemplate([ { label: '显示', click: () => {showMainWindow()}}, { label: '退出', role: 'quit'}}
+]) tray.popUpContextMenu(contextMenu)
+```
+
+(3) 事件
+
+* 'click':点击托盘
+* 'right-click':右击托盘 
+* 'drop-files':文件拖拽。类似的还有drop-text 
+* 'balloon-click':托盘气泡被点击(Windows特性)

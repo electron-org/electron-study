@@ -2,20 +2,19 @@ const WebSocket = require('ws');
 const EventEmitter = require('events');
 const signal = new EventEmitter();
 const ws = new WebSocket('ws://127.0.0.1:8010');
-ws.on('open', () => {
+
+ws.on('open', function open() {
     console.log('connect success')
 })
-ws.on('message', function (message) {
-    let data;
-    try {
-        data = JSON.parse(message)
-    } catch (e) {
-        console.error('parse error:', e)
-    }
+
+ws.on('message', function incoming(message) {
+    let data = JSON.parse(message)
+    console.log('data', data, message);
     signal.emit(data.event, data.data)
 })
 function send(event, data) {
-    ws.send(JSON.stringify({ event, data }))
+    console.log('sended', JSON.stringify({event, data}))
+    ws.send(JSON.stringify({event, data}))
 }
 function invoke(event, data, answerEvent) {
     return new Promise((resolve, reject) => {
