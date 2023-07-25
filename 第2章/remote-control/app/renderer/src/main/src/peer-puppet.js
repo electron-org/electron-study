@@ -1,35 +1,37 @@
 // createAnswer
 // addstream
-const { desktopCapturer } = require('electron')
+import { ipcRenderer } from 'electron'
 
-async function getScreenStream() {
-    const sources = await desktopCapturer.getSources({ types: ['screen'] })
-    return new Promise((resolve, reject) => {
-        navigator.webkitGetUserMedia({
+const pc = new window.RTCPeerConnection({})
+ipcRenderer.on('add-stream', async (event, sourceId) => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: {
                 mandatory: {
                     chromeMediaSource: 'desktop',
-                    chromeMediaSourceId: sources[0].id,
-                    maxWidth: window.screen.width,
-                    maxHeight: window.screen.height
+                    chromeMediaSourceId: sourceId,
+                    minWidth: 1280,
+                    maxWidth: 1280,
+                    minHeight: 720,
+                    maxHeight: 720
                 }
             }
-        }, (stream) => {
-            resolve(stream)
-        }, (err) => {
-            // handle error
-            console.error(err)
         })
-    })
+        handleStream(stream)
+    } catch (e) {
+        console.error(e)
+    }
+})
+
+function handleStream(stream) {
+    pc.addTrack(stream)
 }
-const pc = new window.RTCPeerConnection({})
+
 async function createAnswer(offer) {
-    let screenStream = await getScreenStream()
-    pc.addStream(screenStream)
     await pc.setRemoteDescription(offer)
     await pc.setLocalDescription(await pc.createAnswer())
-    console.log('answer',JSON.stringify(pc.localDescription))
+    console.log('answer', JSON.stringify(pc.localDescription))
     return pc.localDescription
 }
 window.createAnswer = createAnswer

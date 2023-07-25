@@ -1,4 +1,4 @@
-const { BrowserWindow } = require('electron')
+const { BrowserWindow, desktopCapturer } = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
 
@@ -17,8 +17,14 @@ function create() {
     } else {
         win.loadFile(path.resolve(__dirname, '../renderer/pages/main/index.html'))
     }
+    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+        for (const source of sources) {
+            mainWindow.webContents.send('add-stream', source.id)
+            return
+        }
+    })
 }
 function send(channel, ...args) {
     win.webContents.send(channel, ...args)
 }
-module.exports = { create ,send}
+module.exports = { create, send }
